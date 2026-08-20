@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /.npm-cache/
+/ai-project-os-template/
 /.pnp
 .pnp.*
 .yarn/*

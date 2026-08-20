@@ -284,3 +284,32 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .content { padding-inline:12px; }.metrics-four,.metrics-eight { grid-template-columns:1fr 1fr; }.page-actions .secondary-button { display:inline-flex; }.vehicle-metrics,.detail-grid,.job-summary-grid { grid-template-columns:1fr; }.document-brand { gap:12px; }.document-brand .brand-motors { font-size:12px; }.document-brand .brand-jb { font-size:23px; }.document-brand h2 { font-size:16px; }.attachment-grid { grid-template-columns:1fr; }.settings-rule-preview { grid-template-columns:1fr; }.settings-rule-preview div { border-left:0; border-top:1px solid #dadcdb; padding:10px 0 0; }
   .customer-primary-actions { gap:6px; padding:12px; }.customer-primary-actions button { min-height:105px; padding:11px; }.customer-notice { grid-template-columns:28px 1fr; }.customer-notice button { grid-column:2; justify-self:start; padding:5px 0; }.customer-bottom-nav small { font-size:6px; }.customer-app { min-width:0; }.mobile-form { margin-inline:12px; padding:16px; }.category-grid { grid-template-columns:1fr 1fr; }.choice-grid { grid-template-columns:1fr; }
 }
+
+/* Official JB Motors identity and local prototype states */
+.brand-lockup { display:block; width:100%; padding:8px; background:#fff; border:1px solid #d8d9d7; line-height:normal; }
+.brand-lockup.on-dark { border-color:#4b4e50; box-shadow:0 5px 18px rgba(0,0,0,.18); }
+.brand-lockup.compact { width:154px; padding:4px 7px; background:#fff; border:1px solid #d8d9d7; }
+.brand-logo-image { display:block; width:100%; height:auto; object-fit:contain; }
+.document-brand .brand-lockup { width:205px; padding:5px 8px; }
+.logo-setting .brand-lockup { width:260px; flex:0 0 auto; }
+.portal-context .brand-lockup { max-width:250px; }
+.customer-header .brand-lockup { width:165px; }
+.portal-help small { display:block; max-width:250px; color:#aeb2b5; font-size:8px; line-height:1.5; }
+.contact-workshop { width:calc(100% - 32px); border:0; text-align:left; cursor:pointer; }
+.demo-state-select { height:38px; display:grid; grid-template-columns:auto 78px; align-items:center; gap:7px; border:1px solid #d3d5d5; padding:0 8px; background:#fff; border-radius:4px; }
+.demo-state-select > span { color:#858b8f; font-size:7px; font-weight:900; letter-spacing:1px; }
+.demo-state-select select { min-width:0; border:0; background:transparent; font-size:9px; font-weight:800; }
+.interface-state { min-height:460px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:45px; }
+.interface-state > span { width:54px; height:54px; display:grid; place-items:center; background:#f1e6df; color:#984f29; font-weight:950; font-size:20px; }
+.interface-state h2 { margin:18px 0 7px; font-size:22px; }.interface-state p { max-width:420px; margin:0 0 20px; color:#72787b; font-size:11px; line-height:1.55; }
+.state-loading > span { animation:pulse 1.2s ease-in-out infinite; }.state-error > span { background:#f7e8e6; color:var(--red); }
+@keyframes pulse { 50% { opacity:.4; transform:scale(.94); } }
+.pending-input { color:#8d5c39; background:#fff7f1!important; border-color:#e8c3aa!important; }
+.settings-detail-list { display:grid; border-top:1px solid var(--line); }
+.settings-detail-list > div { min-height:62px; display:grid; grid-template-columns:minmax(180px,.7fr) 1.3fr; align-items:center; gap:18px; padding:12px 20px; border-bottom:1px solid #e6e7e5; }
+.settings-detail-list span { color:#72787b; font-size:10px; }.settings-detail-list strong { font-size:11px; }
+.job-table-row { width:100%; border:0; border-bottom:1px solid #e6e7e5; background:#fff; text-align:left; cursor:pointer; }
+.job-table-row:hover { background:#fff8f3; }
+@media (max-width:1080px) { .sidebar .brand-lockup { padding:4px; }.top-actions > .status-pill { display:none; } }
+@media (max-width:820px) { .demo-state-select { display:none; }.mobile-brand .brand-lockup { width:145px; } }
+@media (max-width:760px) { .settings-detail-list > div { grid-template-columns:1fr; gap:5px; }.document-brand .brand-lockup { width:170px; } }
