@@ -1,5 +1,34 @@
 # Change Log
 
+### 2026-09-25 — Functional PDFs and multi-issue customer reporting
+
+**Changed by:** Codex
+
+**Files changed:**
+- `app/page.tsx`, `app/globals.css`
+- `app/features/problem-reports/**`, `app/features/documents/**`
+- `package.json`, `package-lock.json`, `tests/**`
+- Relevant Project OS status, architecture, quality and log files
+
+**Summary:**
+Implemented repeatable multi-issue customer problem reports with multiple categories per issue, validation, versioned browser storage, customer history, workshop review status and confirmed reset. Replaced presentation-only document buttons with direct branded PDFs for estimates, invoices, vehicle history and the August 2026 monthly report.
+
+**Tests run:**
+- `npm run lint`, `npm run build`, `npm test`
+- Browser validation of multi-issue submission, refresh persistence and workshop status persistence
+- All four in-app PDF download controls
+- PDF reopen, text/reference/total checks and page-by-page PNG inspection
+
+**Result:** Pass
+
+**Risks remaining:**
+- Browser storage is local demo persistence only.
+- Media upload, production backend, authentication and integrations remain excluded.
+- Other inactive prototype controls are recorded in `BUG-20260925-002`.
+
+**Next action:**
+- Owner review, then confirm business details and approve the next production phase.
+
 ### 2026-08-20 10:10 — JB Motors canonical frontend prototype completed
 
 **Changed by:** Codex

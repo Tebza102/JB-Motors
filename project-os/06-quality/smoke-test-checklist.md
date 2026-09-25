@@ -24,9 +24,9 @@
 - [ ] Invoices list/detail
 - [ ] Payments and receipt
 - [ ] Warranties/comebacks
-- [ ] Customer requests
+- [x] Customer requests
 - [ ] Customer follow-ups
-- [ ] Reports
+- [x] Reports
 - [ ] Settings sections
 
 ## Role and Workflow
@@ -42,6 +42,18 @@
 - [x] Kilometre calculation shows okay, due-soon, and overdue states correctly.
 - [x] Service request does not imply an instant booking.
 - [x] Problem report does not require customer diagnosis.
+- [x] One problem report supports multiple independent issues and multiple categories per issue.
+- [x] Problem-report validation preserves entered issue data.
+- [x] Submitted reports and workshop review status persist after refresh in the same browser.
+- [x] Reset storage regression verifies only problem reports are cleared; confirmation guard verified in source (confirmation dialog not exercised).
+- [x] Storage regression verifies malformed data cannot be overwritten and unavailable storage cannot report success.
+
+## Documents
+- [x] Estimate PDF downloads and reopens with matching reference and total.
+- [x] Invoice PDF downloads and reopens with matching reference and balance.
+- [x] Vehicle service-history PDF downloads and matches the screen records.
+- [x] August 2026 monthly report downloads and preserves the displayed reporting period.
+- [x] Every generated PDF page was rendered and visually checked for clipping and overlap.
 
 ## Quality and Scope
 - [x] `npm run lint` passes.

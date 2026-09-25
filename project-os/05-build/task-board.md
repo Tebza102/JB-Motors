@@ -5,7 +5,7 @@
 - Plan production architecture, Firebase ownership, authentication, persistence, uploads, PDFs, notifications, and audit logs.
 
 ## Ready
-- Owner review of the completed local prototype.
+- Owner review of multi-issue reporting and the four generated PDF types.
 
 ## In Progress
 - Owner review and confirmation of pending workshop details.
@@ -22,6 +22,8 @@
 - Validated application and Git history relocated to `C:\Users\appri\JB Motors`.
 - Complete workshop, technician and customer UI prototype implemented.
 - Lint, build, HTTP, responsive and representative interaction checks passed.
+- Functional multi-issue customer reports persist in this browser and flow into workshop review.
+- Estimate, invoice, vehicle history and monthly workshop PDF downloads generate real files.
 
 ## Blocked
 - Production contact and commercial settings are blocked pending Jabulani’s confirmation.

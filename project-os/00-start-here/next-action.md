@@ -1,12 +1,12 @@
 # Next Action
 
 ## Safest Next Actions
-1. Jabulani reviews the canonical local prototype and confirms the workflow and visual direction.
+1. Jabulani reviews multi-issue customer reporting, workshop status handling and the four PDF outputs.
 2. Confirm workshop contact, address, VAT, labour, service and notification settings.
 3. Approve a separately scoped production-backend phase only after the prototype is signed off.
 
 ## Current Recommended Action
-Review the completed prototype at `C:\Users\appri\JB Motors` and resolve the owner-confirmation fields.
+Review the completed prototype at `C:\Users\appri\JB Motors`, download each document, test a multi-issue report, and resolve the owner-confirmation fields.
 
 ## Do Not Do Yet
 - Do not upload source or deploy.

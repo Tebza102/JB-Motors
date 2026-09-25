@@ -6,10 +6,12 @@
 - `tests/`: rendered HTML validation
 - `db/`, `drizzle/`, `worker/`, and `examples/`: starter capability scaffolding; not active in this prototype
 - `project-os/`: business, product, design, technical, quality, governance, and agent controls
-- `.openai/hosting.json`: retained Sites metadata; deployment is explicitly disabled for this phase
+- `app/features/problem-reports/`: report types, repeatable issue form and versioned browser persistence
+- `app/features/documents/`: shared display/export data and client-side PDF generation
+- `.openai/hosting.json`: absent; deployment remains disabled for this phase
 
 ## Frontend
-Vinext-compatible Next.js App Router, React 19, TypeScript, Tailwind CSS 4, Geist typography, and client-side React state. The product currently uses one coherent application entry point with reusable internal view components and typed view/role/state unions.
+Vinext-compatible Next.js App Router, React 19, TypeScript, Tailwind CSS 4, Geist typography, and client-side React state. Problem reports and document exports are focused feature modules; the remaining prototype views still use one large application entry point.
 
 ## Backend
 No active backend, API routes, queues, notifications, or background jobs. Prototype actions change local component state only.
@@ -21,7 +23,10 @@ No active database. Starter Drizzle scaffolding is unused and must not be presen
 No production authentication. The role selector demonstrates information architecture only; it is not a security boundary.
 
 ## Storage
-No active file storage. Image and video inputs are interface demonstrations and do not upload.
+Problem reports use a versioned `localStorage` envelope on the current browser only. Writes must succeed before the UI confirms submission or status changes. There is no active cloud file storage; image and video uploads are explicitly unavailable.
+
+## Documents
+`pdf-lib` generates estimate, invoice, vehicle-history and August 2026 workshop-report downloads in the browser. Screen and PDF values come from shared typed data. Exports are marked as local demo documents and do not assert unconfirmed JB Motors VAT or contact details.
 
 ## Deployment
 Local-only. Development command: `npm run dev`. Validation command: `npm run build`. No source upload or deployment without explicit owner approval.
