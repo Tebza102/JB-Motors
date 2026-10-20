@@ -31,6 +31,8 @@ npm run verify:vercel  # checks the generated Vercel output responds and referen
 - Customer Requests: service requests (portal or recorded phone requests) and problem reports with saved statuses, call links, and "Create job card" linked back to the request.
 - Follow-ups: call / WhatsApp device links, explicit completion and audit history. Opening a link does not prove contact happened.
 - PDFs: sample estimate, invoice, service-history and monthly-report downloads (pdf-lib).
+- Built-in guide: a welcome and quick tour on first visit (staff and customer), “Help” on every page with a short page explanation, and “Ask me how” search with step-by-step instructions and “Take me there”. Unbuilt features answer “Coming soon”. All guide text lives in `app/features/guide/content.ts` so the production app can reuse it as the training manual.
+- On phones, the menu includes the demo role switch and Help.
 - Settings → Local demo data: download a JSON backup, or back up and reset local workshop records. Unreadable saved data is never overwritten; it must be backed up and reset first.
 
 ## Deliberately not built (shown as "· planned" or labelled sample)
@@ -46,6 +48,7 @@ Payments capture and receipts, stock movements and purchasing, supplier and warr
 | `app/features/workshop-prototype/` | Record types, seed data, job/service workflow rules, versioned storage, dialogs, job and technician workspaces |
 | `app/features/customer-portal/` | Customer portal screens |
 | `app/features/problem-reports/` | Multi-issue problem reports and their storage |
+| `app/features/guide/` | Help library (page guides, how-to topics, tours), search, help panel, welcome and tour |
 | `app/features/documents/` | Sample document data and PDF generation |
 | `tests/` | Node tests: storage, workflow rules, PDFs, contact links, rendered HTML, copy guards |
 | `db/`, `drizzle/`, `worker/`, `examples/` | Unused Cloudflare/Drizzle starter scaffolding — not workshop persistence |

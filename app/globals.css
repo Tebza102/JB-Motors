@@ -424,6 +424,61 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .portal-vehicle-select select { min-height:38px; border:1px solid #d4d6d5; background:#fff; padding:0 10px; font-size:10px; }
 .prototype-warning { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
 @media (max-width: 760px) {
+  /* The original phone rule hid every secondary button (e.g. "Mark complete"); only the top-bar portal button has a phone replacement. */
+  .secondary-button { display:inline-flex; align-items:center; justify-content:center; }
+  .topbar .secondary-button { display:none; }
   .autosave-note { grid-column:1/-1; text-align:left; }
   .source-link { margin-inline:14px; }
+}
+
+/* Built-in guide: help button, help panel, welcome and quick tour */
+.help-button { min-height:36px; display:inline-flex; align-items:center; gap:6px; border:1px solid #d4d6d5; border-radius:4px; background:#fff; padding:0 11px; color:#81431f; font-size:11px; font-weight:900; cursor:pointer; }
+.help-button span { color:#34383b; font-size:9px; font-weight:850; }
+.help-layer { position:fixed; z-index:90; inset:0; }
+.help-backdrop { position:absolute; inset:0; width:100%; height:100%; border:0; background:rgba(12,14,15,.45); cursor:pointer; }
+.help-panel { position:absolute; inset:0 0 0 auto; width:min(420px,100vw); display:flex; flex-direction:column; background:#fff; border-left:4px solid var(--warm); box-shadow:-18px 0 40px rgba(0,0,0,.22); }
+.help-panel > header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:18px 20px; border-bottom:1px solid var(--line); }
+.help-panel > header h2 { margin:6px 0 0; font-size:19px; line-height:1.25; }
+.help-panel > header > button { width:36px; height:36px; flex:none; border:1px solid #d5d7d6; background:#fff; font-size:21px; cursor:pointer; }
+.help-body { flex:1; overflow-y:auto; display:grid; align-content:start; gap:18px; padding:18px 20px; }
+.help-body > .text-button { justify-self:start; font-size:11px; }
+.help-search label { display:grid; gap:7px; }
+.help-search span { color:#555c60; font-size:10px; font-weight:850; }
+.help-search input { width:100%; min-height:44px; border:1px solid #cfd2d3; border-radius:4px; padding:0 12px; font-size:13px; }
+.help-search input:focus { outline:2px solid var(--warm); outline-offset:1px; }
+.help-page { padding:14px; background:#f7f6f4; border-left:3px solid var(--warm); }
+.help-page h3 { margin:6px 0; font-size:14px; }
+.help-page p { margin:0 0 10px; color:#4f5558; font-size:11.5px; line-height:1.55; }
+.help-page strong { font-size:10.5px; }
+.help-page ul { margin:6px 0 0; padding-left:18px; color:#4f5558; font-size:11px; line-height:1.6; }
+.help-results { list-style:none; margin:8px 0 0; padding:0; display:grid; gap:6px; }
+.help-results button { width:100%; min-height:46px; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid #e0e1df; background:#fff; padding:8px 12px; text-align:left; font-size:12px; font-weight:750; color:#25282a; cursor:pointer; }
+.help-results button:hover,.help-results button:focus-visible { border-color:#e0aa87; background:#fff8f3; }
+.help-results b { color:var(--warm-dark); }
+.help-empty { margin:8px 0 0; color:#6f7679; font-size:11px; line-height:1.5; }
+.help-steps { margin:0; padding-left:22px; display:grid; gap:10px; color:#2f3336; font-size:12.5px; line-height:1.55; }
+.help-panel > footer { padding:14px 20px; border-top:1px solid var(--line); }
+.guide-welcome { width:min(520px,100%); }
+.guide-welcome-body { padding:6px 20px 4px; color:#3f4447; font-size:12.5px; line-height:1.6; }
+.guide-welcome-body ul { padding-left:20px; }
+.guide-note { padding:10px 12px; background:#fff6e7; border-left:3px solid var(--amber); color:#795116; font-size:11px; }
+.guide-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:9px; padding:14px 20px 20px; }
+.tour-layer { position:fixed; z-index:95; inset:0; }
+.tour-dim { position:absolute; inset:0; background:rgba(12,14,15,.55); }
+.tour-highlight { position:fixed; border:3px solid var(--warm); border-radius:6px; box-shadow:0 0 0 9999px rgba(12,14,15,.55); pointer-events:none; transition:top .2s, left .2s, width .2s, height .2s; }
+.tour-card { position:fixed; width:min(320px,calc(100vw - 24px)); padding:16px; background:#fff; border-top:4px solid var(--warm); box-shadow:0 18px 40px rgba(0,0,0,.3); outline:none; }
+.tour-card.centred { top:50%; left:50%; transform:translate(-50%,-50%); }
+.tour-card h2 { margin:6px 0; font-size:16px; }
+.tour-card p { margin:0 0 14px; color:#4f5558; font-size:12px; line-height:1.55; }
+.tour-actions { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.tour-actions > span { display:flex; gap:7px; }
+.drawer-role-select { display:grid; gap:6px; margin:6px 0 12px; }
+.drawer-role-select span { color:#a9aeb0; font-size:9px; font-weight:850; letter-spacing:.4px; }
+.drawer-role-select select { min-height:42px; border:1px solid #4a4e50; border-radius:4px; background:#2c2f31; color:#fff; padding:0 10px; font-size:12px; font-weight:800; }
+.mobile-drawer-help { min-height:42px; margin-bottom:8px; border:1px solid #4a4e50; background:#2c2f31; color:#fff; border-radius:4px; font-size:11px; font-weight:850; cursor:pointer; }
+.customer-header-actions { display:flex; gap:7px; }
+@media (max-width: 760px) {
+  .help-button { padding:0 9px; }
+  .help-button span { display:none; }
+  .tour-card:not(.centred) { left:12px!important; }
 }

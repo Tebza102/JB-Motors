@@ -14,6 +14,20 @@
 
 **Evidence:** Lint/build/tests pass; two issues survive refresh and workshop review; four PDFs reopen, match reference values and render cleanly.
 
+## BUG-20261020-002 — Secondary buttons hidden on phones
+
+**Status:** Fixed
+**Severity:** High
+**Area:** UI
+
+**Observed Behavior:** At 760 px and below, every `.secondary-button` outside page headers and dialogs was hidden, including “Mark complete” in Follow-ups, “Review all issues” and “Open customer” on request cards, and the Settings backup buttons.
+
+**Cause:** The phone media query used `.topbar .eyebrow,.secondary-button { display:none; }`; the second selector was unscoped. The intent was to hide the top-bar portal button, which has a phone replacement.
+
+**Fix:** Phone rule restores `.secondary-button` and hides only `.topbar .secondary-button`.
+
+**Evidence:** “Mark complete” visible at 390 px; no horizontal overflow.
+
 ## BUG-20261020-001 — Job detail overflows on phone-width screens
 
 **Status:** Fixed

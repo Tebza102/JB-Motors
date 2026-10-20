@@ -1,5 +1,19 @@
 # Change Log
 
+### 2026-10-20 — Built-in guide and phone role switch
+
+**Changed by:** Claude Code
+
+**Files changed:** `app/features/guide/**` (new), `app/page.tsx`, `app/features/customer-portal/CustomerPortal.tsx`, `app/globals.css`, `tests/guide.test.mjs` (new), README and Project OS architecture, test plan and logs.
+
+**Summary:** Added a first-visit welcome and quick tour for staff and customers, a Help panel on every page (page explanation, common or popular tasks, “Ask me how” keyword search with numbered steps and “Take me there”), and a single reusable help library. Unbuilt features answer “Coming soon”. Added the demo role switch and Help to the phone menu so the technician view is reachable on phones. Fixed a pre-existing phone rule that hid every secondary button (including “Mark complete”).
+
+**Tests run:** `npm run lint`, `npm test` (21 tests), `npm run build:vercel` + `npm run verify:vercel`, browser walkthrough of welcome, both tours, help search and phone menu at 390 px.
+
+**Result:** Pass
+
+**Next action:** Owner feedback; compulsory per-user tour after real accounts exist.
+
 ### 2026-10-20 — Honest, consistent prototype (project review priority 2)
 
 **Changed by:** Claude Code

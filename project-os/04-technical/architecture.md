@@ -5,6 +5,7 @@
 - `app/components/`: shared UI (`ui.tsx`: status pill, page header, metric card, planned button) and confirmed identity (`brand.tsx`: `WORKSHOP_PROFILE`, logo lockup)
 - `app/features/workshop-prototype/`: record types, seed data (`seed.ts`), job workflow rules (`jobs.ts`), service/odometer/request rules (`service.ts`), formatting, versioned storage, dialogs and the job/technician workspaces
 - `app/features/customer-portal/`: customer portal screens
+- `app/features/guide/`: built-in guide. `content.ts` is the single help library (page guides typed against the screen list, how-to topics, tour steps) intended for reuse in production; `search.ts` is a plain keyword search (no AI); `Guide.tsx` renders the welcome, help panel and tour. Tour progress is kept per browser (`jb-motors-guide.v1`); a compulsory, owner-controlled tour needs real user accounts and is production scope.
 - `app/features/problem-reports/`: report types, repeatable issue form and versioned browser persistence
 - `app/features/documents/`: shared sample document data and client-side PDF generation
 - `public/brand/`: authoritative JB Motors logo

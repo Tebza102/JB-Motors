@@ -20,6 +20,7 @@ Validate structure first, then compile, then exercise representative role and wo
 - `tests/workshop-prototype-storage.test.mjs`: v3 envelope, v1/v2 migration, malformed data never overwritten, backup and reset
 - `tests/workshop-workflow.test.mjs`: shared job list, status/QC gate, notes, idempotent estimate conversion, odometer regression and follow-up rule, service request validation and references
 - `tests/rendered-html.test.mjs`: server-rendered dashboard, centralised identity, retired Sites hosting config absent (does not check Vercel), and a guard against success messages for unbuilt actions
+- `tests/guide.test.mjs`: every screen has a page guide, “Ask me how” returns the right topic for plain-language questions (unbuilt features return “coming soon”), and every quoted button/label in available instructions exists in the app
 - `tests/problem-report-storage.test.mjs`, `tests/pdf-generation.test.mjs`, `tests/contact-actions.test.mjs`
 - HTTP 200 check against the local development server
 

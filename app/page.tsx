@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { BrandLockup, WORKSHOP_PROFILE } from "./components/brand";
 import { MetricCard, PageHeader, PlannedButton, StatusPill, padCount } from "./components/ui";
 import { CustomerPortal } from "./features/customer-portal/CustomerPortal";
+import { STAFF_TOUR } from "./features/guide/content";
+import type { HowToTopic, StaffPageId } from "./features/guide/content";
+import { GuideTour, HelpPanel, WelcomeDialog, useGuideProgress } from "./features/guide/Guide";
 import type { ServiceRequestSubmission } from "./features/customer-portal/CustomerPortal";
 import { clearProblemReports, loadProblemReports, PROBLEM_REPORT_STORAGE_KEY, saveProblemReports } from "./features/problem-reports/storage";
 import { createFeatureId, getReportUrgency, REPORT_STATUSES } from "./features/problem-reports/types";
@@ -27,24 +30,11 @@ import { backupAndResetWorkshopPrototypeData, createEmptyWorkshopData, createLoc
 import { SERVICE_REQUEST_STATUSES } from "./features/workshop-prototype/types";
 import type { CreationDialogState, CustomerDialogState, CustomerRecord, DiagnosticFinding, FollowUpActivity, FollowUpMethod, FollowUpRecord, JobCardDraft, OdometerReading, PrototypeMutationResult, ServiceRequestRecord, ServiceRequestStatus, VehicleRecord, WorkshopPrototypeData } from "./features/workshop-prototype/types";
 
-type WorkshopView =
-  | "dashboard"
-  | "customers"
-  | "vehicle"
-  | "estimate"
-  | "job-card"
-  | "inventory"
-  | "suppliers"
-  | "invoice"
-  | "payments"
-  | "warranties"
-  | "requests"
-  | "follow-ups"
-  | "reports"
-  | "settings"
-  | "technician";
+/** Every staff screen must have a page guide in the help library, so the two lists are one type. */
+type WorkshopView = StaffPageId;
 
 type StaffRole = "Owner / Administrator" | "Service Advisor" | "Technician" | "Store / Parts" | "Finance / Accounts";
+const STAFF_ROLES: StaffRole[] = ["Owner / Administrator","Service Advisor","Technician","Store / Parts","Finance / Accounts"];
 type InterfaceState = "ready" | "loading" | "empty" | "error";
 type ReadingPoint = { kilometres: number; recordedAt: string; source: string; sample: boolean };
 
@@ -168,7 +158,7 @@ function Dashboard({ jobs, customers, followUps, serviceRequests, problemReports
         {kpis.map(([value, label, note, tone]) => <MetricCard key={label} value={value} label={label} note={note} tone={tone} />)}
       </section>
       <div className="dashboard-grid">
-        <section className="panel attention-panel">
+        <section className="panel attention-panel" data-tour="attention">
           <div className="panel-heading"><div><span className="section-kicker">ACTION CENTRE</span><h2>Needs attention</h2></div><button className="text-button" onClick={() => onOpen("follow-ups")}>Follow-ups ({activeFollowUps.length}) →</button></div>
           <div className="attention-list">
             {attention.map((item) => (
@@ -391,7 +381,7 @@ function OperationalModule({ view }: { view: WorkshopView }) {
   return <><PageHeader eyebrow={item.eyebrow} title={item.title} description={item.description} actions={<PlannedButton className="primary-button" label={item.action} reason={item.reason} />} /><section className="panel table-panel generic-table"><div className="filter-bar"><label className="search-field"><span>SEARCH</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${item.title.toLowerCase()}…`} /></label>{hasStatus && <div className="filter-actions"><button className={`filter-chip ${!attentionOnly ? "active" : ""}`} aria-pressed={!attentionOnly} onClick={() => setAttentionOnly(false)}>All</button><button className={`filter-chip ${attentionOnly ? "active" : ""}`} aria-pressed={attentionOnly} onClick={() => setAttentionOnly(true)}>Needs attention</button></div>}</div><div className="responsive-table"><div className="table-head" style={{gridTemplateColumns:`repeat(${item.headers.length}, minmax(110px, 1fr))`}}>{item.headers.map((header) => <span key={header}>{header}</span>)}</div>{rows.length === 0 && <div className="followup-empty"><strong>Nothing matches</strong><p>Change the filter or search text.</p></div>}{rows.map((row) => <div className="table-row static-row" style={{gridTemplateColumns:`repeat(${row.length}, minmax(110px, 1fr))`}} key={row.join("")}>{row.map((cell,index) => <span data-label={item.headers[index]} key={index}>{hasStatus && index===row.length-1?<StatusPill tone={settled(cell)?"green":"amber"}>{cell}</StatusPill>:cell}</span>)}</div>)}</div></section></>;
 }
 
-function MobileNavigationDrawer({ open, items, activeView, role, triggerRef, onNavigate, onPortal, onClose }: { open: boolean; items: Array<(typeof navItems)[number] & { count?:number }>; activeView: WorkshopView; role: StaffRole; triggerRef: React.RefObject<HTMLButtonElement | null>; onNavigate: (view: WorkshopView) => void; onPortal: () => void; onClose: () => void }) {
+function MobileNavigationDrawer({ open, items, activeView, role, triggerRef, onNavigate, onPortal, onRoleChange, onHelp, onClose }: { open: boolean; items: Array<(typeof navItems)[number] & { count?:number }>; activeView: WorkshopView; role: StaffRole; triggerRef: React.RefObject<HTMLButtonElement | null>; onNavigate: (view: WorkshopView) => void; onPortal: () => void; onRoleChange: (role: StaffRole) => void; onHelp: () => void; onClose: () => void }) {
   const drawerRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -402,7 +392,7 @@ function MobileNavigationDrawer({ open, items, activeView, role, triggerRef, onN
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
       if (event.key !== "Tab" || !drawerRef.current) return;
-      const focusable = [...drawerRef.current.querySelectorAll<HTMLElement>("button")];
+      const focusable = [...drawerRef.current.querySelectorAll<HTMLElement>("button, select")];
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -417,7 +407,7 @@ function MobileNavigationDrawer({ open, items, activeView, role, triggerRef, onN
   }, [open, onClose, triggerRef]);
   if (!open) return null;
   const navigate = (view: WorkshopView) => { onNavigate(view); onClose(); };
-  return <div className="mobile-drawer-layer"><button className="mobile-drawer-backdrop" aria-label="Close navigation menu" onClick={onClose} /><aside className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Workshop navigation" ref={drawerRef}><header><BrandLockup /><button type="button" aria-label="Close navigation menu" onClick={onClose}>×</button></header><nav>{items.map((item) => <button className={`nav-item ${activeView === item.view ? "active" : ""}`} key={item.view} onClick={() => navigate(item.view)}><span className="nav-code">{item.code}</span>{item.label}{item.view === "follow-ups" && <b className="nav-count">{item.count??0}</b>}</button>)}{role === "Owner / Administrator" && <button className={`nav-item settings ${activeView === "settings" ? "active" : ""}`} onClick={() => navigate("settings")}><span className="nav-code">ST</span>Settings</button>}</nav><button className="mobile-drawer-portal" onClick={() => { onPortal(); onClose(); }}>Customer portal</button><div className="user-card"><span className="avatar">J</span><span><strong>{WORKSHOP_PROFILE.ownerName}</strong><small>{role} · demo role</small></span></div></aside></div>;
+  return <div className="mobile-drawer-layer"><button className="mobile-drawer-backdrop" aria-label="Close navigation menu" onClick={onClose} /><aside className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Workshop navigation" ref={drawerRef}><header><BrandLockup /><button type="button" aria-label="Close navigation menu" onClick={onClose}>×</button></header><nav>{items.map((item) => <button className={`nav-item ${activeView === item.view ? "active" : ""}`} key={item.view} onClick={() => navigate(item.view)}><span className="nav-code">{item.code}</span>{item.label}{item.view === "follow-ups" && <b className="nav-count">{item.count??0}</b>}</button>)}{role === "Owner / Administrator" && <button className={`nav-item settings ${activeView === "settings" ? "active" : ""}`} onClick={() => navigate("settings")}><span className="nav-code">ST</span>Settings</button>}</nav><label className="drawer-role-select"><span>Demo role · changes the screens shown</span><select value={role} onChange={(event) => onRoleChange(event.target.value as StaffRole)}>{STAFF_ROLES.map((item) => <option key={item}>{item}</option>)}</select></label><button className="mobile-drawer-help" onClick={() => { onHelp(); onClose(); }}>Help & guide</button><button className="mobile-drawer-portal" onClick={() => { onPortal(); onClose(); }}>Customer portal</button><div className="user-card"><span className="avatar">J</span><span><strong>{WORKSHOP_PROFILE.ownerName}</strong><small>{role} · demo role</small></span></div></aside></div>;
 }
 
 export default function Home() {
@@ -439,6 +429,9 @@ export default function Home() {
   const [jobMode,setJobMode]=useState<JobMode>("detail");
   const [settingsSection,setSettingsSection]=useState(SETTINGS_SECTIONS[0]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+  const [guideProgress, updateGuideProgress] = useGuideProgress();
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const todayLabel = useClientValue(() => new Date().toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).toUpperCase(), "TODAY");
 
@@ -637,6 +630,14 @@ export default function Home() {
     notify(result.backupKey ? `Local workshop records reset. Backup kept as ${result.backupKey}` : "There were no local workshop records to reset");
   };
   const openLocalDataSettings = () => { setSettingsSection("Local demo data"); setActiveView("settings"); };
+  const startTour = () => { updateGuideProgress({ staffWelcomed: true }); setHelpOpen(false); setMobileMenuOpen(false); setActiveView("dashboard"); setTourOpen(true); };
+  const finishTour = () => { setTourOpen(false); updateGuideProgress({ staffWelcomed: true, staffTourDone: true }); };
+  const openHelpTopic = (topic: HowToTopic) => {
+    setHelpOpen(false);
+    if (topic.page === "home") { setPortalOpen(true); return; }
+    if (topic.role) { changeRole(topic.role); return; }
+    if (topic.page) setActiveView(topic.page as WorkshopView);
+  };
   const changeRole = (nextRole: StaffRole) => {setRole(nextRole); setMobileMenuOpen(false); if (nextRole === "Technician") setActiveView("technician"); else if (nextRole === "Store / Parts") setActiveView("inventory"); else if (nextRole === "Finance / Accounts") setActiveView("invoice"); else setActiveView("dashboard");};
   const renderView = () => {
     if (activeView === "dashboard") return <Dashboard jobs={jobs} customers={customerRecords} followUps={followUpRecords} serviceRequests={serviceRequests} problemReports={problemReports} readings={prototypeData.odometerReadings} onOpen={setActiveView} onOpenJob={openJob} onOpenCustomer={openCustomer} />;
@@ -654,5 +655,5 @@ export default function Home() {
     return <OperationalModule key={activeView} view={activeView} />;
   };
   if (portalOpen) return <CustomerPortal customer={portalCustomer} servicePlans={SERVICE_PLANS} latestReading={(vehicleId) => readingsFor(vehicleId).at(-1)} reports={problemReports.filter((report) => resolveLegacyId(report.customer.id) === DEMO_PORTAL_CUSTOMER_ID)} serviceRequests={serviceRequests.filter((request) => request.customerId === DEMO_PORTAL_CUSTOMER_ID)} onExit={() => setPortalOpen(false)} onSubmitReport={submitProblemReport} onRecordKilometres={recordPortalKilometres} onSubmitServiceRequest={submitPortalServiceRequest} onSaveProfile={savePortalProfile} />;
-  return <main className="app-shell"><aside className="sidebar"><BrandLockup /><nav className="side-nav" aria-label="Workshop navigation">{visibleNav.map((item) => <button className={`nav-item ${activeView===item.view?"active":""}`} key={item.view} onClick={() => setActiveView(item.view)}><span className="nav-code">{item.code}</span>{item.label}{item.view==="follow-ups"&&<b className="nav-count">{activeFollowUpCount}</b>}</button>)}</nav>{role === "Owner / Administrator" && <button className={`nav-item settings ${activeView==="settings"?"active":""}`} onClick={() => setActiveView("settings")}><span className="nav-code">ST</span>Settings</button>}<div className="user-card"><span className="avatar">J</span><span><strong>{WORKSHOP_PROFILE.ownerName}</strong><small>{role} · demo role</small></span></div></aside><section className="workspace"><header className="topbar"><button className="mobile-menu-button" ref={mobileMenuButtonRef} aria-label="Open workshop navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen(true)}><span /><span /><span /></button><button className="mobile-brand" onClick={() => setActiveView("dashboard")}><BrandLockup compact /></button><button className="mobile-portal-button" onClick={() => setPortalOpen(true)}>Customer portal</button><div className="desktop-greeting"><span className="eyebrow">{todayLabel}</span><strong>JB Motors Workshop</strong></div><div className="top-actions"><StatusPill tone="orange">LOCAL UI PROTOTYPE</StatusPill><label className="demo-state-select"><span>STATE</span><select value={interfaceState} onChange={(event) => setInterfaceState(event.target.value as InterfaceState)}><option value="ready">Ready</option><option value="loading">Loading</option><option value="empty">Empty</option><option value="error">Error</option></select></label><label className="role-select" title="Changes the screens shown. This is not sign-in or access control."><span>DEMO ROLE</span><select value={role} onChange={(event) => changeRole(event.target.value as StaffRole)}>{["Owner / Administrator","Service Advisor","Technician","Store / Parts","Finance / Accounts"].map((item) => <option key={item}>{item}</option>)}</select></label><button className="secondary-button portal-button" onClick={() => setPortalOpen(true)}>Customer portal</button><button className="primary-button" onClick={() => openCreationDialog({ kind: "job" })}>+ New job card</button></div></header>{prototypeStorageWarning && <div className="prototype-warning" role="status"><span>{prototypeStorageWarning}</span>{prototypeStorageBlocked && activeView !== "settings" && <button className="text-button" onClick={openLocalDataSettings}>Open local demo data →</button>}</div>}<div className="content">{interfaceState === "ready" ? renderView() : <InterfaceStatePanel state={interfaceState} onReset={() => setInterfaceState("ready")} />}</div><nav className="staff-mobile-nav" aria-label="Quick workshop navigation">{visibleNav.slice(0,5).map((item) => <button className={activeView===item.view?"active":""} key={item.view} onClick={() => setActiveView(item.view)}><span>{item.code}</span><small>{item.label}</small></button>)}</nav></section><MobileNavigationDrawer open={mobileMenuOpen} items={visibleNav} activeView={activeView} role={role} triggerRef={mobileMenuButtonRef} onNavigate={setActiveView} onPortal={() => setPortalOpen(true)} onClose={() => setMobileMenuOpen(false)} />{creationDialog && <CreationDialog dialog={creationDialog} customers={customerRecords} onClose={() => setCreationDialog(null)} onSaveCustomer={addCustomer} onSaveJob={addJob} onSaveFinding={addFinding} onSaveServiceRequest={recordPhoneRequest} />}{customerDialog&&dialogCustomer&&<CustomerRecordDialog dialog={customerDialog} customer={dialogCustomer} onClose={()=>setCustomerDialog(null)} onSave={saveCustomerRecord}/>} {toast && <div className="toast" role="status"><span>✓</span><p>{toast}</p><button aria-label="Dismiss notification" onClick={() => setToast("")}>×</button></div>}</main>;
+  return <main className="app-shell"><aside className="sidebar"><BrandLockup /><nav className="side-nav" aria-label="Workshop navigation" data-tour="nav">{visibleNav.map((item) => <button className={`nav-item ${activeView===item.view?"active":""}`} key={item.view} onClick={() => setActiveView(item.view)}><span className="nav-code">{item.code}</span>{item.label}{item.view==="follow-ups"&&<b className="nav-count">{activeFollowUpCount}</b>}</button>)}</nav>{role === "Owner / Administrator" && <button className={`nav-item settings ${activeView==="settings"?"active":""}`} onClick={() => setActiveView("settings")}><span className="nav-code">ST</span>Settings</button>}<div className="user-card"><span className="avatar">J</span><span><strong>{WORKSHOP_PROFILE.ownerName}</strong><small>{role} · demo role</small></span></div></aside><section className="workspace"><header className="topbar"><button className="mobile-menu-button" data-tour="menu-button" ref={mobileMenuButtonRef} aria-label="Open workshop navigation" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen(true)}><span /><span /><span /></button><button className="mobile-brand" onClick={() => setActiveView("dashboard")}><BrandLockup compact /></button><button className="mobile-portal-button" data-tour="portal-mobile" onClick={() => setPortalOpen(true)}>Customer portal</button><div className="desktop-greeting"><span className="eyebrow">{todayLabel}</span><strong>JB Motors Workshop</strong></div><div className="top-actions"><button className="help-button" data-tour="help" aria-label="Help and guide" onClick={() => setHelpOpen(true)}>?<span>Help</span></button><StatusPill tone="orange">LOCAL UI PROTOTYPE</StatusPill><label className="demo-state-select"><span>STATE</span><select value={interfaceState} onChange={(event) => setInterfaceState(event.target.value as InterfaceState)}><option value="ready">Ready</option><option value="loading">Loading</option><option value="empty">Empty</option><option value="error">Error</option></select></label><label className="role-select" data-tour="role" title="Changes the screens shown. This is not sign-in or access control."><span>DEMO ROLE</span><select value={role} onChange={(event) => changeRole(event.target.value as StaffRole)}>{STAFF_ROLES.map((item) => <option key={item}>{item}</option>)}</select></label><button className="secondary-button portal-button" data-tour="portal" onClick={() => setPortalOpen(true)}>Customer portal</button><button className="primary-button" data-tour="new-job" onClick={() => openCreationDialog({ kind: "job" })}>+ New job card</button></div></header>{prototypeStorageWarning && <div className="prototype-warning" role="status"><span>{prototypeStorageWarning}</span>{prototypeStorageBlocked && activeView !== "settings" && <button className="text-button" onClick={openLocalDataSettings}>Open local demo data →</button>}</div>}<div className="content">{interfaceState === "ready" ? renderView() : <InterfaceStatePanel state={interfaceState} onReset={() => setInterfaceState("ready")} />}</div><nav className="staff-mobile-nav" aria-label="Quick workshop navigation">{visibleNav.slice(0,5).map((item) => <button className={activeView===item.view?"active":""} key={item.view} onClick={() => setActiveView(item.view)}><span>{item.code}</span><small>{item.label}</small></button>)}</nav></section><MobileNavigationDrawer open={mobileMenuOpen} items={visibleNav} activeView={activeView} role={role} triggerRef={mobileMenuButtonRef} onNavigate={setActiveView} onPortal={() => setPortalOpen(true)} onRoleChange={changeRole} onHelp={() => setHelpOpen(true)} onClose={() => setMobileMenuOpen(false)} />{helpOpen && <HelpPanel audience="staff" page={activeView} onClose={() => setHelpOpen(false)} onOpenTopic={openHelpTopic} onStartTour={startTour} />}{tourOpen && <GuideTour steps={STAFF_TOUR} onFinish={finishTour} />}{guideProgress && !guideProgress.staffWelcomed && !tourOpen && !creationDialog && <WelcomeDialog audience="staff" onTour={startTour} onSkip={() => updateGuideProgress({ staffWelcomed: true })} />}{creationDialog && <CreationDialog dialog={creationDialog} customers={customerRecords} onClose={() => setCreationDialog(null)} onSaveCustomer={addCustomer} onSaveJob={addJob} onSaveFinding={addFinding} onSaveServiceRequest={recordPhoneRequest} />}{customerDialog&&dialogCustomer&&<CustomerRecordDialog dialog={customerDialog} customer={dialogCustomer} onClose={()=>setCustomerDialog(null)} onSave={saveCustomerRecord}/>} {toast && <div className="toast" role="status"><span>✓</span><p>{toast}</p><button aria-label="Dismiss notification" onClick={() => setToast("")}>×</button></div>}</main>;
 }

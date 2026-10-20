@@ -4,6 +4,9 @@ import { FormEvent, useState } from "react";
 import { BrandLockup } from "../../components/brand";
 import { StatusPill } from "../../components/ui";
 import { SERVICE_HISTORY_DOCUMENT } from "../documents/data";
+import { CUSTOMER_TOUR } from "../guide/content";
+import type { CustomerPageId, HowToTopic } from "../guide/content";
+import { GuideTour, HelpPanel, WelcomeDialog, useGuideProgress } from "../guide/Guide";
 import { ProblemReportForm } from "../problem-reports/ProblemReportForm";
 import type { ProblemReport, ReportMutationResult } from "../problem-reports/types";
 import { isValidSaMobile } from "../workshop-prototype/contact";
@@ -13,7 +16,8 @@ import type { ServicePlan, ServiceStatus } from "../workshop-prototype/service";
 import { CONTACT_PREFERENCES } from "../workshop-prototype/types";
 import type { ContactPreference, CustomerRecord, PrototypeMutationResult, ServiceRequestRecord, VehicleRecord } from "../workshop-prototype/types";
 
-type CustomerView = "home" | "vehicles" | "service" | "problem" | "history" | "profile" | "kilometres";
+/** Every portal screen must have a page guide in the help library. */
+type CustomerView = CustomerPageId;
 export type LatestReading = { kilometres: number; recordedAt: string; source: string } | undefined;
 export type ServiceRequestSubmission = { vehicleId: string; serviceType: string; preferredDate: string; notes: string };
 
@@ -39,12 +43,18 @@ const SERVICE_STATE_COPY = {
 export function CustomerPortal(props: PortalProps) {
   const { customer, onExit } = props;
   const [view, setView] = useState<CustomerView>("home");
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+  const [guideProgress, updateGuideProgress] = useGuideProgress();
   const activeVehicles = customer?.vehicles.filter((vehicle) => vehicle.status === "active") ?? [];
   const [vehicleId, setVehicleId] = useState(activeVehicles[0]?.id ?? "");
   const vehicle = activeVehicles.find((item) => item.id === vehicleId) ?? activeVehicles[0];
   const plan = vehicle ? props.servicePlans.find((item) => item.vehicleId === vehicle.id) : undefined;
   const status = plan && vehicle ? getServiceStatus(plan, vehicle.odometer) : null;
   const home = () => setView("home");
+  const startTour = () => { setHelpOpen(false); setView("home"); setTourOpen(true); };
+  const finishTour = () => { setTourOpen(false); updateGuideProgress({ customerTourDone: true }); };
+  const openTopic = (topic: HowToTopic) => { setHelpOpen(false); if (topic.page) setView(topic.page as CustomerView); };
   const content = () => {
     if (!customer) return <section className="mobile-success"><h1>Customer record unavailable</h1><p>The demo customer could not be found in this browser.</p></section>;
     if (view === "vehicles") return <CustomerVehicle vehicle={vehicle} status={status} onNavigate={setView} />;
@@ -55,9 +65,9 @@ export function CustomerPortal(props: PortalProps) {
     if (view === "profile") return <CustomerProfile customer={customer} onSave={props.onSaveProfile} />;
     return <CustomerHome customer={customer} vehicles={activeVehicles} vehicle={vehicle} plan={plan} status={status} serviceRequests={props.serviceRequests} onSelectVehicle={setVehicleId} onNavigate={setView} />;
   };
-  return <div className="portal-stage"><aside className="portal-context"><BrandLockup /><span className="section-kicker">CUSTOMER CARE PORTAL · DEMO</span><h1>Your vehicle, professionally managed from arrival to its next service.</h1><p>There is no sign-in in this prototype. The portal always shows the demo customer {customer?.name ?? ""} and saves changes only in this browser.</p><button className="secondary-dark" onClick={onExit}>← Return to workshop platform</button><div className="portal-help"><span>Need help?</span><strong>Contact JB Motors</strong><small>Workshop contact details require owner confirmation.</small></div></aside><main className="customer-app"><header className="customer-header"><BrandLockup compact /><button onClick={onExit}>Workshop view</button></header><div className="customer-content">{content()}</div><nav className="customer-bottom-nav" aria-label="Customer portal navigation">{[
+  return <div className="portal-stage"><aside className="portal-context"><BrandLockup /><span className="section-kicker">CUSTOMER CARE PORTAL · DEMO</span><h1>Your vehicle, professionally managed from arrival to its next service.</h1><p>There is no sign-in in this prototype. The portal always shows the demo customer {customer?.name ?? ""} and saves changes only in this browser.</p><button className="secondary-dark" onClick={onExit}>← Return to workshop platform</button><div className="portal-help"><span>Need help?</span><strong>Contact JB Motors</strong><small>Workshop contact details require owner confirmation.</small></div></aside><main className="customer-app"><header className="customer-header"><BrandLockup compact /><span className="customer-header-actions"><button data-tour="c-help" onClick={() => setHelpOpen(true)}>Help</button><button onClick={onExit}>Workshop view</button></span></header><div className="customer-content">{content()}</div><nav className="customer-bottom-nav" aria-label="Customer portal navigation" data-tour="c-nav">{[
     ["home","HM","Home"],["vehicles","VH","My vehicles"],["service","SV","Service"],["problem","RP","Report"],["history","HS","History"],["profile","PF","Profile"],
-  ].map(([target,code,label]) => <button key={target} className={view===target?"active":""} onClick={() => setView(target as CustomerView)}><span>{code}</span><small>{label}</small></button>)}</nav></main></div>;
+  ].map(([target,code,label]) => <button key={target} className={view===target?"active":""} onClick={() => setView(target as CustomerView)}><span>{code}</span><small>{label}</small></button>)}</nav></main>{helpOpen && <HelpPanel audience="customer" page={view} onClose={() => setHelpOpen(false)} onOpenTopic={openTopic} onStartTour={startTour} />}{tourOpen && <GuideTour steps={CUSTOMER_TOUR} onFinish={finishTour} />}{guideProgress && !guideProgress.customerTourDone && !tourOpen && view === "home" && <WelcomeDialog audience="customer" onTour={startTour} onSkip={() => updateGuideProgress({ customerTourDone: true })} />}</div>;
 }
 
 function NoVehicle() {
@@ -74,8 +84,8 @@ function CustomerHome({ customer, vehicles, vehicle, plan, status, serviceReques
   const [today] = useState(() => new Date());
   const openRequest = serviceRequests.find((request) => request.status !== "Closed");
   return <><section className="customer-greeting"><span>{today.toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long" }).toUpperCase()}</span><h1>Hello, {customer.name.split(" ")[0]}</h1><p>{vehicle ? `Here’s what your ${vehicle.label} needs next.` : "Your vehicles will appear here."}</p></section>
-    {!vehicle ? <NoVehicle /> : <section className="customer-vehicle-card"><div className="vehicle-card-header"><span className="vehicle-mark light">{vehicle.label.split(" ").filter((part) => !/^\d+$/.test(part)).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span><div><small>{vehicles.length > 1 ? "SELECTED VEHICLE" : "PRIMARY VEHICLE"}</small><h2>{vehicle.label}</h2><p>{vehicle.registration}</p></div><button aria-label="View vehicle details" onClick={() => onNavigate("vehicles")}>→</button></div>{vehicles.length > 1 && <label className="portal-vehicle-select"><span>Vehicle</span><select value={vehicle.id} onChange={(event) => onSelectVehicle(event.target.value)}>{vehicles.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.registration}</option>)}</select></label>}<ServiceSummary vehicle={vehicle} plan={plan} status={status} />{plan && <div className="last-service"><span>LAST SERVICE · SAMPLE RECORD</span><strong>{formatCalendarDay(plan.lastServiceDate)} · {formatKilometres(plan.lastServiceKm)}</strong><small>{plan.lastServiceLabel} · JB Motors</small></div>}</section>}
-    <section className="customer-primary-actions"><button onClick={() => onNavigate("kilometres")} disabled={!vehicle}><span>KM</span><strong>Update kilometres</strong><small>Keep reminders accurate</small></button><button onClick={() => onNavigate("service")} disabled={!vehicle}><span>SV</span><strong>Request a service</strong><small>Saved as a request</small></button><button onClick={() => onNavigate("problem")} disabled={!vehicle}><span>!</span><strong>Report a problem</strong><small>Tell us what the car is doing</small></button></section>
+    {!vehicle ? <NoVehicle /> : <section className="customer-vehicle-card" data-tour="c-vehicle"><div className="vehicle-card-header"><span className="vehicle-mark light">{vehicle.label.split(" ").filter((part) => !/^\d+$/.test(part)).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span><div><small>{vehicles.length > 1 ? "SELECTED VEHICLE" : "PRIMARY VEHICLE"}</small><h2>{vehicle.label}</h2><p>{vehicle.registration}</p></div><button aria-label="View vehicle details" onClick={() => onNavigate("vehicles")}>→</button></div>{vehicles.length > 1 && <label className="portal-vehicle-select"><span>Vehicle</span><select value={vehicle.id} onChange={(event) => onSelectVehicle(event.target.value)}>{vehicles.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.registration}</option>)}</select></label>}<ServiceSummary vehicle={vehicle} plan={plan} status={status} />{plan && <div className="last-service"><span>LAST SERVICE · SAMPLE RECORD</span><strong>{formatCalendarDay(plan.lastServiceDate)} · {formatKilometres(plan.lastServiceKm)}</strong><small>{plan.lastServiceLabel} · JB Motors</small></div>}</section>}
+    <section className="customer-primary-actions" data-tour="c-actions"><button onClick={() => onNavigate("kilometres")} disabled={!vehicle}><span>KM</span><strong>Update kilometres</strong><small>Keep reminders accurate</small></button><button onClick={() => onNavigate("service")} disabled={!vehicle}><span>SV</span><strong>Request a service</strong><small>Saved as a request</small></button><button onClick={() => onNavigate("problem")} disabled={!vehicle}><span>!</span><strong>Report a problem</strong><small>Tell us what the car is doing</small></button></section>
     {(status?.state === "due-soon" || status?.state === "overdue" || openRequest) && <section className="customer-notices"><div className="customer-section-heading"><span className="section-kicker">YOUR VEHICLE</span><h2>Needs attention</h2></div>{status && status.state !== "ok" && <article className="customer-notice orange"><span className="notice-mark">01</span><div><StatusPill tone={status.state === "overdue" ? "red" : "orange"}>SERVICE REMINDER</StatusPill><h3>{status.state === "overdue" ? "Your service is overdue" : "Your service is approaching"}</h3><p>Based on your latest kilometre reading, it is a good time to plan your next visit.</p></div><button onClick={() => onNavigate("service")}>Request service</button></article>}{openRequest && <article className="customer-notice blue"><span className="notice-mark">02</span><div><StatusPill tone="blue">{openRequest.status.toUpperCase()}</StatusPill><h3>{openRequest.serviceType} request · {openRequest.reference}</h3><p>Saved {formatDate(openRequest.submittedAt)} for {formatCalendarDay(openRequest.preferredDate)}. This is a request, not a confirmed booking.</p></div><button onClick={() => onNavigate("history")}>View request</button></article>}</section>}
     <button className="contact-workshop" type="button" onClick={() => onNavigate("profile")}><span>JB</span><div><strong>Contact JB Motors</strong><small>Contact details require owner confirmation</small></div><b>View profile</b></button></>;
 }
