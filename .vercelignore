@@ -1,0 +1,14 @@
+node_modules
+.git
+.env*
+.wrangler
+.nitro
+.output
+dist
+output
+outputs
+tmp
+work
+project-os
+tests
+ai-project-os-template

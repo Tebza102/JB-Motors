@@ -12,8 +12,8 @@ import type { IssueCategory, IssueOccurrence, IssueSeverity, ProblemIssue, Probl
 type IssueDraft = ProblemIssue;
 type IssueErrors = Partial<Record<"categories" | "description" | "occurrence" | "severity", string>>;
 
-const CUSTOMER = { id: "customer-thabo-mokoena", name: "Thabo Mokoena", mobile: "082 555 0148" };
-const VEHICLE = { id: "vehicle-toyota-corolla", label: "2020 Toyota Corolla 1.8 Prestige", registration: "GP 123-456" };
+type ReportCustomer = ProblemReport["customer"];
+type ReportVehicle = ProblemReport["vehicle"];
 
 function newIssue(): IssueDraft {
   return {
@@ -35,12 +35,20 @@ function validateIssue(issue: IssueDraft): IssueErrors {
 }
 
 export function ProblemReportForm({
+  customer,
+  vehicles,
+  defaultVehicleId,
   onDone,
   onSubmit,
 }: {
+  customer: ReportCustomer;
+  vehicles: ReportVehicle[];
+  defaultVehicleId?: string;
   onDone: () => void;
   onSubmit: (report: ProblemReport) => ReportMutationResult;
 }) {
+  const [vehicleId, setVehicleId] = useState(defaultVehicleId ?? vehicles[0]?.id ?? "");
+  const vehicle = vehicles.find((item) => item.id === vehicleId);
   const [issues, setIssues] = useState<IssueDraft[]>([newIssue()]);
   const [errors, setErrors] = useState<Record<string, IssueErrors>>({});
   const [submitError, setSubmitError] = useState("");
@@ -79,6 +87,10 @@ export function ProblemReportForm({
     if (submittingRef.current) return;
     const nextErrors = Object.fromEntries(issues.map((issue) => [issue.id, validateIssue(issue)]));
     setErrors(nextErrors);
+    if (!vehicle) {
+      setSubmitError("Select the vehicle this report is about.");
+      return;
+    }
     if (Object.values(nextErrors).some((entry) => Object.keys(entry).length > 0)) {
       setSubmitError("Complete the highlighted fields before submitting the report.");
       return;
@@ -91,8 +103,8 @@ export function ProblemReportForm({
     const report: ProblemReport = {
       id: createFeatureId("report"),
       reference: `JB-PR-${Date.now().toString().slice(-6)}`,
-      customer: CUSTOMER,
-      vehicle: VEHICLE,
+      customer: { id: customer.id, name: customer.name, mobile: customer.mobile },
+      vehicle: { id: vehicle.id, label: vehicle.label, registration: vehicle.registration },
       submittedAt: timestamp,
       updatedAt: timestamp,
       status: "Submitted",
@@ -111,9 +123,9 @@ export function ProblemReportForm({
   if (submitted) {
     return <section className="mobile-success problem-success">
       <span className="success-check">✓</span>
-      <span className="status-pill tone-green">PROBLEM SUBMITTED</span>
-      <h1>JB Motors has received your report.</h1>
-      <p>A workshop staff member will review each issue and contact you about the next step.</p>
+      <span className="status-pill tone-green">REPORT SAVED</span>
+      <h1>Your report is saved on this device.</h1>
+      <p>In this prototype it appears in the workshop’s Customer Requests view in this same browser. It is not sent to JB Motors, and nobody is notified.</p>
       <div className="success-summary column">
         <span><small>Reference</small><strong>{submitted.reference}</strong></span>
         <span><small>Issues reported</small><strong>{submitted.issues.length}</strong></span>
@@ -134,7 +146,7 @@ export function ProblemReportForm({
       <div><span className="section-kicker">REPORT A VEHICLE PROBLEM</span><h1>What is your vehicle doing?</h1><p>Add each issue separately. One issue can relate to several vehicle areas.</p></div>
     </section>
     <form className="mobile-form problem-form" onSubmit={handleSubmit} noValidate>
-      <label><span>Vehicle</span><select value="corolla" disabled><option value="corolla">{VEHICLE.label} · {VEHICLE.registration}</option></select></label>
+      <label><span>Vehicle</span><select value={vehicleId} onChange={(event) => setVehicleId(event.target.value)} disabled={vehicles.length < 2}>{vehicles.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.registration}</option>)}</select></label>
       <div className="issue-card-list">
         {issues.map((issue, index) => {
           const issueErrors = errors[issue.id] ?? {};
@@ -153,7 +165,7 @@ export function ProblemReportForm({
       <button type="button" className="secondary-button add-issue-button" onClick={() => setIssues((current) => [...current, newIssue()])}>+ Add another issue</button>
       <div className="media-disabled" aria-disabled="true"><strong>Photos and video</strong><p>Media upload is not available in this local prototype. Add all important details in the issue descriptions.</p></div>
       {submitError && <p className="submit-error" role="alert">{submitError}</p>}
-      <button className="primary-button wide-primary" type="submit" disabled={submitting}>{submitting ? "Saving report…" : `Submit ${issues.length > 1 ? `${issues.length} issues` : "problem report"}`}</button>
+      <button className="primary-button wide-primary" type="submit" disabled={submitting}>{submitting ? "Saving report…" : `Save ${issues.length > 1 ? `${issues.length} issues` : "problem report"}`}</button>
       <p className="form-reassurance">If the vehicle is unsafe to drive, stop in a safe place and contact emergency assistance. JB Motors contact details still require owner confirmation.</p>
     </form>
   </>;

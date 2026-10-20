@@ -21,7 +21,7 @@ Prove that one coherent JB Motors interface can support the complete workshop li
 - Real file/photo/video uploads
 - Payment processing, email, SMS, WhatsApp Business, GPS, telematics, and AI troubleshooting
 - Multi-branch, franchise, or multi-tenant administration
-- Public deployment
+- Production deployment of real workshop data (hosting the demo on Vercel was authorised 2026-09-25)
 
 ## MVP User Flow
 Customer or front desk creates the initial need → vehicle is assessed → estimate is reviewed → approved work becomes a job card → labour and parts are recorded → QC marks the vehicle ready → invoice and payment position are shown → service history and follow-up become visible.
@@ -41,4 +41,4 @@ Customer or front desk creates the initial need → vehicle is assessed → esti
 - UI is usable on desktop and mobile.
 - Lint and production build pass.
 - Exact logo, owner, and location are correct.
-- Prototype and local-only status are documented.
+- Prototype, browser-local and sample/planned status are documented.

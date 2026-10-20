@@ -16,8 +16,11 @@ Validate structure first, then compile, then exercise representative role and wo
 
 ## Automated Tests
 - `npm run lint`
-- `npm run build`
-- Existing rendered HTML test when compatible
+- `npm test` = `npm run typecheck` + production build + `node --test tests/*.test.mjs`
+- `tests/workshop-prototype-storage.test.mjs`: v3 envelope, v1/v2 migration, malformed data never overwritten, backup and reset
+- `tests/workshop-workflow.test.mjs`: shared job list, status/QC gate, notes, idempotent estimate conversion, odometer regression and follow-up rule, service request validation and references
+- `tests/rendered-html.test.mjs`: server-rendered dashboard, centralised identity, retired Sites hosting config absent (does not check Vercel), and a guard against success messages for unbuilt actions
+- `tests/problem-report-storage.test.mjs`, `tests/pdf-generation.test.mjs`, `tests/contact-actions.test.mjs`
 - HTTP 200 check against the local development server
 
 ## Responsive Tests
@@ -43,4 +46,5 @@ Use only fictional South African customer, vehicle, job, estimate, invoice, and 
 - No fake JB Motors phone, email, address, VAT, or commercial rules remain.
 - All planned UI modules and states are demonstrable.
 - Lint and build pass from the canonical path.
-- No upload or deployment occurs.
+- No success message describes an action that did not happen.
+- Deployment status is only claimed after checking the live URL.

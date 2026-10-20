@@ -1,101 +1,56 @@
-# vinext-starter
+# JB Motors — Digital Workshop prototype
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+An interactive, browser-local prototype of a single-workshop management and customer-retention platform for JB Motors (Ratanda, Heidelberg, Gauteng). It shows staff, technician and customer experiences so the owner can review the product before any production build.
+
+**This is not a production system.** There is no database, server API, sign-in, access control, cloud file storage, payment processing or message delivery. Records you create are saved only in the current browser. Use synthetic data only.
 
 ## Prerequisites
 
-- Node.js `>=22.13.0`
+- Node.js `>=22.13.0` (Node 24 is used for verification; tests import TypeScript directly through Node's type stripping)
 
-## Quick Start
+## Commands
 
 ```bash
 npm install
-npm run dev
-npm run build
+npm run dev            # local development server (Vinext / Vite)
+npm run lint           # ESLint
+npm run typecheck      # tsc --noEmit
+npm test               # release gate: typecheck + production build + node --test tests/*.test.mjs
+npm run build:vercel   # separate Vinext/Nitro build for Vercel (Build Output API v3)
+npm run verify:vercel  # checks the generated Vercel output responds and references real assets
 ```
 
-This starter does not use `wrangler.jsonc`.
+`npm test` must pass before any release. Deployment steps and the current hosting status are in `project-os/04-technical/vercel-launch.md`; a successful local build does not mean a deployment is live.
 
-## Included Shape
+## What works (saved in this browser)
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+- Customers and vehicles: add, edit, archive; odometer edits create reading history.
+- Job cards: one job list shared by the dashboard, table, board, detail and technician views. Every job opens its own record. Status changes, QC checks, road test, inspection checks, notes and findings are saved with time and demo actor. **Ready** requires every QC check and a passed road test.
+- Estimate conversion: the sample approved estimate (JB-EST-0226) converts once into a linked draft job; converting again opens the same job.
+- Customer portal (demo customer Thabo Mokoena, no sign-in): kilometre updates (lower readings rejected) update service status, the vehicle record and the follow-up queue; service requests and problem reports appear in the staff inbox; profile edits update the customer record.
+- Customer Requests: service requests (portal or recorded phone requests) and problem reports with saved statuses, call links, and "Create job card" linked back to the request.
+- Follow-ups: call / WhatsApp device links, explicit completion and audit history. Opening a link does not prove contact happened.
+- PDFs: sample estimate, invoice, service-history and monthly-report downloads (pdf-lib).
+- Settings → Local demo data: download a JSON backup, or back up and reset local workshop records. Unreadable saved data is never overwritten; it must be backed up and reset first.
 
-## Workspace Auth Headers
+## Deliberately not built (shown as "· planned" or labelled sample)
 
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
+Payments capture and receipts, stock movements and purchasing, supplier and warranty forms, job-card printing, photo uploads, invoice generation from jobs, editable settings, and report calculations. Money, stock, report and service-history figures are labelled sample data.
 
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
+## Project structure
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+| Path | Purpose |
+|---|---|
+| `app/page.tsx` | Staff screens and state orchestration |
+| `app/components/` | Shared UI (`ui.tsx`) and the confirmed workshop identity (`brand.tsx`) |
+| `app/features/workshop-prototype/` | Record types, seed data, job/service workflow rules, versioned storage, dialogs, job and technician workspaces |
+| `app/features/customer-portal/` | Customer portal screens |
+| `app/features/problem-reports/` | Multi-issue problem reports and their storage |
+| `app/features/documents/` | Sample document data and PDF generation |
+| `tests/` | Node tests: storage, workflow rules, PDFs, contact links, rendered HTML, copy guards |
+| `db/`, `drizzle/`, `worker/`, `examples/` | Unused Cloudflare/Drizzle starter scaffolding — not workshop persistence |
+| `project-os/` | Business, product, technical, quality and delivery records |
 
-Treat the full name as optional and fall back to email when it is absent:
+## Before production
 
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
-"# JB-Motors" 
+Owner confirmation of business details (contact, VAT, labour rate, service rules) and an approved production scope are required first. The production foundation (authentication, enforced roles, shared database, audit, backups) is described in `project-os/04-technical/architecture.md` and the 2026-10-20 project review.

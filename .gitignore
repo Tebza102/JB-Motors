@@ -15,9 +15,14 @@
 # testing
 /coverage
 
+# typescript incremental build info
+*.tsbuildinfo
+
 # next.js
 /.next/
 /.vinext/
+/.nitro/
+/.output/
 /out/
 
 # misc

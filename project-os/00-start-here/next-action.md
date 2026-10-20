@@ -1,22 +1,18 @@
 # Next Action
 
 ## Safest Next Actions
-1. Jabulani reviews multi-issue customer reporting, workshop status handling and the four PDF outputs.
-2. Confirm workshop contact, address, VAT, labour, service and notification settings.
-3. Approve a separately scoped production-backend phase only after the prototype is signed off.
-
-## Current Recommended Action
-Review the completed prototype at `C:\Users\appri\JB Motors`, download each document, test a multi-issue report, and resolve the owner-confirmation fields.
+1. Jabulani reviews the prototype end to end (staff, technician, customer portal), the four sample PDFs and `output/JB-Motors-project-review-2026-10-20.md`.
+2. Confirm workshop contact, address, VAT treatment, labour rate, service interval and reminder threshold, and notification preferences.
+3. Agree the minimum paid production scope (review priority 1) and record the architecture decision (stay on Vinext vs standard Next.js App Router; Firebase vs other backend) before backend work.
+4. If hosting the demo, complete Vercel authentication and deploy per `04-technical/vercel-launch.md`, then smoke-test the live URL.
 
 ## Do Not Do Yet
-- Do not upload source or deploy.
-- Do not add Firebase, authentication, a database, real uploads, payments, email, WhatsApp APIs, GPS, telematics, or AI diagnosis.
-- Do not invent missing JB Motors contact, tax, address, or commercial information.
-- Do not remove the original generated workspace or the reference template folder.
+- Do not add authentication, a database, uploads, payments, email, WhatsApp APIs, GPS, telematics or AI diagnosis until the production scope is approved.
+- Do not invent JB Motors contact, tax, address or commercial information.
+- Do not use real customer data in the browser-local prototype.
+- Do not remove the reference template folder.
 
-## Definition of Done for Next Action
-- Canonical project exists at `C:\Users\appri\JB Motors` with application files, Git history, root `project-os`, and exact logo asset.
-- All planned UI surfaces and demo states are navigable.
-- Lint and production build pass.
-- Local browser checks pass at representative desktop, tablet, staff-mobile, and customer-mobile sizes.
-- No source upload or deployment occurs.
+## Definition of Done for the Next Phase (secure shared foundation, review priority 3)
+- Two staff accounts can access authorised shared records.
+- A customer cannot access another customer's records.
+- Denied writes are covered by tests.

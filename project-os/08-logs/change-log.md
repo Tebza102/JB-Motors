@@ -1,5 +1,42 @@
 # Change Log
 
+### 2026-10-20 — Honest, consistent prototype (project review priority 2)
+
+**Changed by:** Claude Code
+
+**Files changed:**
+- `app/page.tsx`, `app/globals.css`, `tsconfig.json`, `worker/index.ts`, `db/cloudflare-workers.d.ts`
+- `app/components/ui.tsx`, `app/components/brand.tsx` (identity moved here from `page.tsx`)
+- `app/features/workshop-prototype/**` (types, storage v3, `seed.ts`, `jobs.ts`, `service.ts`, `format.ts`, `useModalFocus.ts`, `JobWorkspace.tsx`, dialogs, `contact.ts`)
+- `app/features/customer-portal/CustomerPortal.tsx`, `app/features/problem-reports/ProblemReportForm.tsx`
+- `tests/workshop-prototype-storage.test.mjs`, `tests/workshop-workflow.test.mjs` (new), `tests/rendered-html.test.mjs`
+- `package.json` (scripts only: `typecheck`, `test` now runs it), `.gitignore` (`*.tsbuildinfo`)
+- `README.md` and Project OS status, architecture, task board, MVP scope, test plan and logs
+
+**Summary:**
+Resolved all 7 standalone TypeScript errors and made typecheck part of `npm test`. Replaced fixed demo job detail with per-job records built from one shared job list; job status, QC, road test, inspection checks, notes and findings persist with timestamps and demo actor, shared between staff and technician views; Ready requires complete QC and a passed road test. Estimate conversion now creates one linked draft (idempotent). Customer kilometres, service requests and profile persist and flow to vehicle records, the requests inbox and the follow-up queue; lower odometer readings are rejected. Staff can record phone requests and create linked job cards from requests. Removed every success message for actions that did not happen; unbuilt actions are disabled “· planned”; money, stock, report and history figures are labelled sample; dashboard, customer and inventory figures are calculated from records. Current date replaces fixed August 2026 headers. Storage v3 validates every record, never overwrites unreadable data, and offers backup download and back-up-then-reset. Customer record dialog now traps focus.
+
+**Tests run:**
+- `npm run lint` — pass
+- `npm run typecheck` — pass (0 errors; previously 7)
+- `npm test` — pass, 18 tests (previously 7)
+- Browser walkthrough on local dev server (see current-status)
+
+**Result:** Pass
+
+**Risks remaining:**
+- Browser-local only: no authentication, shared database, server validation or backups.
+- Bundle size warning and Vinext route classification unchanged.
+
+**Next action:**
+- Owner review and production scope decision.
+
+### 2026-09-25 — Vercel deployment preparation
+
+Added a separate Vinext/Nitro Vercel build, pinned adapter dependency, Build Output API configuration, upload exclusions and generated-output verification. Preserved the existing local preview configuration. Resolved Nitro CSS package import resolution with an explicit Tailwind CSS alias. Added generated-output lint exclusions and deployment instructions. No secrets or environment files changed.
+
+Vercel build completes locally. CLI authentication is unavailable, so no live deployment is claimed. Source deployment is required to build native dependencies for Vercel Linux rather than uploading Windows prebuilt dependencies.
+
 ### 2026-09-25 — Functional PDFs and multi-issue customer reporting
 
 **Changed by:** Codex
