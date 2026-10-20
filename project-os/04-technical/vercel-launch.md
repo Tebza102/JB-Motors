@@ -28,9 +28,15 @@ Deploy source so Vercel rebuilds native dependencies for Linux; do not upload Wi
 
 After deployment reaches Ready, check the production URL, logo/CSS, customer navigation, PDF downloads and report persistence. Do not claim the site is live based on a local build alone.
 
-## Current access blocker
+## How production deploys
 
-The CLI reported Logged out. The connected Vercel app returned 403 for deployment listing and the dashboard required login. No deployment has been made by this task.
+The Vercel project is connected to GitHub `Tebza102/JB-Motors`: every push to `main` creates a Production deployment (no CLI login needed). Run the validation commands above before pushing, then confirm the GitHub deployment status for the pushed commit and check the live alias.
+
+Production alias: `https://jb-motors-apprigate.vercel.app` (Vercel Authentication enabled — only signed-in team members can view it). `https://jb-motors.vercel.app` belongs to a different project.
+
+## Current status (2026-10-20)
+
+Commit `d5e105a` is deployed to Production and verified; see `08-logs/deployment-log.md`. The Vercel CLI is still logged out and the Vercel connector lacks access to the `apprigate` scope, so dashboard-level checks (logs, settings) need a team member.
 
 ## Product limits
 
